@@ -101,8 +101,12 @@ final class VaartixTransport extends AbstractTransport
                 'content' => base64_encode($part->getBody()),
                 'content_type' => $part->getMediaType() . '/' . $part->getMediaSubtype(),
             ];
-            if ($part->getDisposition() === 'inline' && $part->hasContentId()) {
-                $attachment['content_id'] = $part->getContentId();
+            if ($part->getDisposition() === 'inline') {
+                // Laravel's $message->embed() creates a Content-ID and puts it in the HTML.
+                // Symfony's ->embed($data, 'logo') is referenced as cid:logo instead.
+                $attachment['content_id'] = $part->hasContentId()
+                    ? $part->getContentId()
+                    : ($part->getFilename() ?? 'inline');
             }
             $attachments[] = $attachment;
         }

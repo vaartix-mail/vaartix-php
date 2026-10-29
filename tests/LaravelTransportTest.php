@@ -77,7 +77,20 @@ final class LaravelTransportTest extends TestCase
         self::assertArrayNotHasKey('contentId', $file);
         self::assertSame('image/png', $image['contentType']);
         self::assertSame("\x89PNG fake", base64_decode($image['content']));
-        self::assertArrayHasKey('contentId', $image);
+        self::assertSame('logo', $image['contentId']); // matches cid:logo in the HTML
+    }
+
+    public function testLaravelStyleEmbedKeepsItsContentId(): void
+    {
+        $t = new FakeTransport();
+        $image = (new \Symfony\Component\Mime\Part\DataPart("\x89PNG fake", 'logo.png', 'image/png'))->asInline();
+        $cid = $image->getContentId(); // what Laravel's $message->embed() returns, as cid:...
+        $email = (new Email())->from('a@acme.in')->to('b@example.com')->subject('Hi')
+            ->html('<img src="cid:' . $cid . '">')->addPart($image);
+
+        $this->transport($t)->send($email);
+
+        self::assertSame($cid, $t->calls[0]['json']['attachments'][0]['contentId']);
     }
 
     public function testApiErrorsBecomeTransportExceptions(): void
