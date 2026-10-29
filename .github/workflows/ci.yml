@@ -23,8 +23,17 @@ jobs:
           extensions: curl, json
           coverage: none
       - run: composer validate --strict
+      - name: Leave out Laravel on PHP 8.1 (Laravel 12+ needs PHP 8.2)
+        if: matrix.php == '8.1'
+        run: composer remove --dev --no-update illuminate/config illuminate/container illuminate/mail
       - run: composer install --no-interaction --no-progress
-      - run: vendor/bin/phpunit
+      - name: PHPUnit
+        run: |
+          vendor/bin/phpunit --log-junit junit.xml || {
+            # Turn failures into annotations so they show on the pull request.
+            php -r '$x = simplexml_load_file("junit.xml"); foreach ($x->xpath("//testcase[failure or error]") as $t) { $f = $t->failure ?: $t->error; echo "::error file=" . $t["file"] . "::" . $t["class"] . "::" . $t["name"] . " " . str_replace(["\r", "\n"], ["", "%0A"], substr((string) $f, 0, 1500)) . "\n"; }'
+            exit 1
+          }
 
   analyse:
     runs-on: ubuntu-latest
