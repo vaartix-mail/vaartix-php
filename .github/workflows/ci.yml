@@ -24,7 +24,13 @@ jobs:
           coverage: none
       - run: composer validate --strict
       - run: composer install --no-interaction --no-progress
-      - run: vendor/bin/phpunit
+      - name: PHPUnit
+        run: |
+          vendor/bin/phpunit --log-junit junit.xml || {
+            # Turn failures into annotations so they show on the pull request.
+            php -r '$x = simplexml_load_file("junit.xml"); foreach ($x->xpath("//testcase[failure or error]") as $t) { $f = $t->failure ?: $t->error; echo "::error file=" . $t["file"] . "::" . $t["class"] . "::" . $t["name"] . " " . str_replace(["\r", "\n"], ["", "%0A"], substr((string) $f, 0, 1500)) . "\n"; }'
+            exit 1
+          }
 
   analyse:
     runs-on: ubuntu-latest

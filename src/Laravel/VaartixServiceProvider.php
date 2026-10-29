@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vaartix\Laravel;
 
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Mail\MailManager;
 use Illuminate\Support\ServiceProvider;
 use Vaartix\Vaartix;
@@ -16,9 +18,11 @@ final class VaartixServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(Vaartix::class, static function ($app): Vaartix {
+        $this->app->singleton(Vaartix::class, static function (Container $app): Vaartix {
+            /** @var ConfigRepository $repository */
+            $repository = $app->make('config');
             /** @var array{key?: string|null, base_url?: string|null} $config */
-            $config = $app['config']->get('services.vaartix', []);
+            $config = $repository->get('services.vaartix', []);
             $options = isset($config['base_url']) ? ['base_url' => $config['base_url']] : [];
             return new Vaartix($config['key'] ?? null, $options);
         });

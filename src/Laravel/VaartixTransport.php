@@ -12,6 +12,8 @@ use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Header\HeaderInterface;
+use Symfony\Component\Mime\Message;
 use Symfony\Component\Mime\MessageConverter;
 use Vaartix\Exceptions\VaartixException;
 use Vaartix\Vaartix;
@@ -35,7 +37,11 @@ final class VaartixTransport extends AbstractTransport
 
     protected function doSend(SentMessage $message): void
     {
-        $email = MessageConverter::toEmail($message->getOriginalMessage());
+        $original = $message->getOriginalMessage();
+        if (!$original instanceof Message) {
+            throw new TransportException('Vaartix can only send structured emails, not raw MIME messages.');
+        }
+        $email = MessageConverter::toEmail($original);
         $params = self::toParams($email, $message->getEnvelope());
         try {
             $result = $this->client->emails->send($params);
@@ -107,6 +113,7 @@ final class VaartixTransport extends AbstractTransport
         $headers = [];
         $tags = [];
         foreach ($email->getHeaders()->all() as $header) {
+            /** @var HeaderInterface $header */
             if ($header instanceof TagHeader) {
                 // Laravel's ->tag('welcome') becomes the Vaartix tag welcome=true.
                 $tags[] = ['name' => $header->getValue(), 'value' => 'true'];
