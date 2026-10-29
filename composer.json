@@ -3,7 +3,17 @@
     "description": "Official PHP SDK for the Vaartix email API",
     "type": "library",
     "license": "MIT",
-    "keywords": ["email", "transactional-email", "api", "india", "vaartix", "ses", "sdk", "laravel"],
+    "keywords": [
+        "email",
+        "transactional-email",
+        "api",
+        "india",
+        "vaartix",
+        "ses",
+        "sdk",
+        "laravel",
+        "symfony-mailer"
+    ],
     "homepage": "https://vaartix.com",
     "support": {
         "docs": "https://vaartix.com/docs/",
@@ -11,7 +21,11 @@
         "source": "https://github.com/vaartix-mail/vaartix-php"
     },
     "authors": [
-        { "name": "NAP Designs", "email": "support@vaartix.com", "homepage": "https://vaartix.com" }
+        {
+            "name": "NAP Designs",
+            "email": "support@vaartix.com",
+            "homepage": "https://vaartix.com"
+        }
     ],
     "require": {
         "php": "^8.1",
@@ -19,14 +33,35 @@
         "ext-json": "*"
     },
     "require-dev": {
+        "illuminate/config": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/container": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/mail": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^10.5 || ^11.0",
-        "phpstan/phpstan": "^2.0"
+        "symfony/mailer": "^6.2 || ^7.0 || ^8.0"
+    },
+    "suggest": {
+        "symfony/mailer": "Needed for the Laravel mail driver and Symfony Mailer transport (Laravel includes it)."
+    },
+    "conflict": {
+        "symfony/mailer": "<6.2"
     },
     "autoload": {
-        "psr-4": { "Vaartix\\": "src/" }
+        "psr-4": {
+            "Vaartix\\": "src/"
+        }
     },
     "autoload-dev": {
-        "psr-4": { "Vaartix\\Tests\\": "tests/" }
+        "psr-4": {
+            "Vaartix\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Vaartix\\Laravel\\VaartixServiceProvider"
+            ]
+        }
     },
     "scripts": {
         "test": "phpunit",

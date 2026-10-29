@@ -74,10 +74,13 @@ Network failures have `type === 'network_error'` and `statusCode === null`.
 
 ## Laravel
 
-Add your key to `.env` and `config/services.php`:
+The package registers a `vaartix` mail driver automatically, so Laravel's `Mail` facade,
+Mailables, notifications and queued mail all go through Vaartix.
 
 ```php
 // .env
+MAIL_MAILER=vaartix
+MAIL_FROM_ADDRESS=noreply@acme.in   # on a domain verified in Vaartix
 VAARTIX_API_KEY=vx_live_...
 VAARTIX_WEBHOOK_SECRET=whsec_...
 
@@ -86,15 +89,24 @@ VAARTIX_WEBHOOK_SECRET=whsec_...
     'key' => env('VAARTIX_API_KEY'),
     'webhook_secret' => env('VAARTIX_WEBHOOK_SECRET'),
 ],
+
+// config/mail.php, inside 'mailers'
+'vaartix' => [
+    'transport' => 'vaartix',
+],
 ```
 
-Register the client once, in `AppServiceProvider::register()`:
+That's all. Existing code keeps working:
 
 ```php
-$this->app->singleton(\Vaartix\Vaartix::class, fn () => new \Vaartix\Vaartix(config('services.vaartix.key')));
+Mail::to($user)->send(new OrderConfirmed($order));
 ```
 
-Then inject it wherever you send email:
+Laravel's `->tag('welcome')` and `->metadata('order_id', 42)` become Vaartix tags, so you can
+filter by them in the dashboard. `SentMessage::getMessageId()` returns the Vaartix email ID.
+
+To call the API directly, inject the client; it's registered as a singleton from
+`services.vaartix.key`:
 
 ```php
 public function store(Request $request, \Vaartix\Vaartix $vaartix)
@@ -107,6 +119,9 @@ public function store(Request $request, \Vaartix\Vaartix $vaartix)
     ], idempotencyKey: "order-confirmed-{$order->id}");
 }
 ```
+
+**Symfony:** `Vaartix\Laravel\VaartixTransport` is a regular Symfony Mailer transport:
+`new Mailer(new VaartixTransport(new Vaartix\Vaartix()))`.
 
 ## Webhooks
 
