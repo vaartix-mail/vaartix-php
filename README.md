@@ -74,7 +74,7 @@ Network failures have `type === 'network_error'` and `statusCode === null`.
 
 ## Laravel
 
-The package registers a `vaartix` mail driver automatically, so Laravel's `Mail` facade,
+Laravel 12 or newer. The package registers a `vaartix` mail driver automatically, so Laravel's `Mail` facade,
 Mailables, notifications and queued mail all go through Vaartix.
 
 ```php

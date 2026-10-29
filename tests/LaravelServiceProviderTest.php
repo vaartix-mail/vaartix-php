@@ -16,6 +16,9 @@ final class LaravelServiceProviderTest extends TestCase
 {
     public function testRegistersTheVaartixMailerAndClient(): void
     {
+        if (!class_exists(MailManager::class)) {
+            self::markTestSkipped('Laravel is not installed (PHP 8.1 runs the core tests only).');
+        }
         $app = new Container();
         $app->instance('config', new Repository([
             'services' => ['vaartix' => ['key' => 'vx_from_config']],

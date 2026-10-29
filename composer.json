@@ -33,9 +33,9 @@
         "ext-json": "*"
     },
     "require-dev": {
-        "illuminate/config": "^10.0 || ^11.0 || ^12.0 || ^13.0",
-        "illuminate/container": "^10.0 || ^11.0 || ^12.0 || ^13.0",
-        "illuminate/mail": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/config": "^12.0 || ^13.0",
+        "illuminate/container": "^12.0 || ^13.0",
+        "illuminate/mail": "^12.0 || ^13.0",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^10.5 || ^11.0",
         "symfony/mailer": "^6.2 || ^7.0 || ^8.0"
