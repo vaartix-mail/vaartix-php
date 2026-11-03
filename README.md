@@ -120,8 +120,35 @@ public function store(Request $request, \Vaartix\Vaartix $vaartix)
 }
 ```
 
-**Symfony:** `Vaartix\Laravel\VaartixTransport` is a regular Symfony Mailer transport:
-`new Mailer(new VaartixTransport(new Vaartix\Vaartix()))`.
+**Symfony:** set the DSN and register the transport factory once.
+
+```dotenv
+# .env.local
+MAILER_DSN=vaartix+api://vx_your_api_key@default
+```
+
+```yaml
+# config/services.yaml
+services:
+    Vaartix\Symfony\VaartixTransportFactory:
+        parent: mailer.transport_factory.abstract
+        tags: ['mailer.transport_factory']
+```
+
+`default` means https://api.vaartix.com. Add `?timeout=10` to change the request timeout
+(seconds). If your key contains characters like `+` or `/`, URL-encode them in the DSN.
+
+Without the framework, build the transport from the same DSN:
+
+```php
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport;
+use Vaartix\Symfony\VaartixTransportFactory;
+
+$mailer = new Mailer((new Transport([new VaartixTransportFactory()]))->fromString('vaartix+api://vx_your_api_key@default'));
+```
+
+Or directly: `new Mailer(new Vaartix\Laravel\VaartixTransport(new Vaartix\Vaartix()))`.
 
 ## Webhooks
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vaartix\Laravel;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mailer\Header\MetadataHeader;
@@ -30,9 +32,12 @@ final class VaartixTransport extends AbstractTransport
         'content-type', 'content-transfer-encoding', 'mime-version', 'return-path',
     ];
 
-    public function __construct(private readonly Vaartix $client)
-    {
-        parent::__construct();
+    public function __construct(
+        private readonly Vaartix $client,
+        ?EventDispatcherInterface $dispatcher = null,
+        ?LoggerInterface $logger = null,
+    ) {
+        parent::__construct($dispatcher, $logger);
     }
 
     protected function doSend(SentMessage $message): void
