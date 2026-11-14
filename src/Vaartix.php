@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use JsonException;
 use Vaartix\Exceptions\VaartixException;
 use Vaartix\Resources\Batch;
+use Vaartix\Resources\Domains;
 use Vaartix\Resources\Emails;
 use Vaartix\Resources\Webhooks;
 
@@ -25,12 +26,13 @@ use Vaartix\Resources\Webhooks;
  */
 final class Vaartix
 {
-    public const VERSION = '0.3.0';
+    public const VERSION = '0.4.0';
     public const DEFAULT_BASE_URL = 'https://api.vaartix.com';
 
     public readonly Emails $emails;
     public readonly Batch $batch;
     public readonly Webhooks $webhooks;
+    public readonly Domains $domains;
 
     private readonly string $apiKey;
     private readonly string $baseUrl;
@@ -59,6 +61,7 @@ final class Vaartix
         $this->emails = new Emails($this);
         $this->batch = new Batch($this);
         $this->webhooks = new Webhooks($this);
+        $this->domains = new Domains($this);
     }
 
     /**

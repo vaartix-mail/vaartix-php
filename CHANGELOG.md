@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 0.4.0
+
+- Open and click tracking: `'tracking' => ['opens' => ..., 'clicks' => ...]` on `emails->send()`
+  and on each email in `batch->send()`, overriding the sending domain's defaults.
+- Laravel and Symfony: an `X-Vaartix-Tracking: opens=on, clicks=off` header on a message becomes
+  the API's tracking setting (same format as the SMTP relay) and is not forwarded. An invalid value
+  is rejected before sending.
+- `domains->update($id, ['open_tracking' => ..., 'click_tracking' => ...])` changes a domain's
+  tracking defaults.
+
 ## 0.3.0
 
 - Symfony Mailer DSN support: `Vaartix\Symfony\VaartixTransportFactory` builds the transport

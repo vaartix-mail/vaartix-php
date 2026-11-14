@@ -93,6 +93,34 @@ final class LaravelTransportTest extends TestCase
         self::assertSame($cid, $t->calls[0]['json']['attachments'][0]['contentId']);
     }
 
+    public function testTrackingHeaderBecomesTheTrackingObject(): void
+    {
+        $t = new FakeTransport();
+        $email = (new Email())->from('a@acme.in')->to('b@example.com')->subject('Hi')->html('<a href="https://acme.in">x</a>');
+        $email->getHeaders()->addTextHeader('X-Vaartix-Tracking', 'opens=off, clicks=on');
+        $email->getHeaders()->addTextHeader('X-Order', '1042');
+
+        $this->transport($t)->send($email);
+
+        $json = $t->calls[0]['json'];
+        self::assertSame(['opens' => false, 'clicks' => true], $json['tracking']);
+        self::assertSame(['X-Order' => '1042'], $json['headers']); // the tracking header is not forwarded
+    }
+
+    public function testInvalidTrackingHeaderIsRejectedBeforeSending(): void
+    {
+        $t = new FakeTransport();
+        $email = (new Email())->from('a@acme.in')->to('b@example.com')->subject('Hi')->text('x');
+        $email->getHeaders()->addTextHeader('X-Vaartix-Tracking', 'opens=maybe');
+        try {
+            $this->transport($t)->send($email);
+            self::fail('Expected a TransportException');
+        } catch (TransportException $e) {
+            self::assertStringContainsString('"opens=maybe" is not opens=on|off', $e->getMessage());
+        }
+        self::assertSame([], $t->calls);
+    }
+
     public function testApiErrorsBecomeTransportExceptions(): void
     {
         $t = new FakeTransport(422, ['error' => ['type' => 'domain_not_verified', 'message' => 'Verify acme.in first']]);

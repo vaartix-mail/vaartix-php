@@ -150,6 +150,36 @@ $mailer = new Mailer((new Transport([new VaartixTransportFactory()]))->fromStrin
 
 Or directly: `new Mailer(new Vaartix\Laravel\VaartixTransport(new Vaartix\Vaartix()))`.
 
+## Open and click tracking
+
+Tracking is off unless you turn it on, for a whole domain or for one email. Only HTML emails are
+tracked. Keep click tracking off for password-reset, magic-link and OTP emails.
+
+```php
+// Default for every email from a domain (needs a full-access key from an owner or admin).
+// $domainId is the domain's ID from the dashboard or the API.
+$vaartix->domains->update($domainId, ['open_tracking' => true, 'click_tracking' => true]);
+
+// Override for one email
+$vaartix->emails->send([
+    'from' => 'Acme <orders@acme.in>',
+    'to' => 'priya@example.com',
+    'subject' => 'Your order has shipped',
+    'html' => '<p>Track it <a href="https://acme.in/orders/123">here</a></p>',
+    'tracking' => ['opens' => true, 'clicks' => true],
+]);
+```
+
+In Laravel or Symfony, add the same header the SMTP relay uses:
+
+```php
+// Laravel Mailable
+public function headers(): \Illuminate\Mail\Mailables\Headers
+{
+    return new \Illuminate\Mail\Mailables\Headers(text: ['X-Vaartix-Tracking' => 'opens=on, clicks=off']);
+}
+```
+
 ## Webhooks
 
 Check that a webhook request really came from Vaartix before trusting it. Pass the **raw** body.

@@ -133,6 +133,26 @@ final class ClientTest extends TestCase
         self::assertSame(['url' => 'https://acme.in/hooks', 'events' => ['email.bounced']], $t->calls[0]['json']);
     }
 
+    public function testTrackingIsPassedThrough(): void
+    {
+        $t = new FakeTransport();
+        $this->client($t)->emails->send([
+            'from' => 'a@acme.in', 'to' => 'b@example.com', 'subject' => 'Hi', 'html' => 'x',
+            'tracking' => ['opens' => true, 'clicks' => false],
+        ]);
+        self::assertSame(['opens' => true, 'clicks' => false], $t->calls[0]['json']['tracking']);
+    }
+
+    public function testDomainUpdateSendsCamelCaseTrackingFields(): void
+    {
+        $t = new FakeTransport(200, ['id' => 'dom/1', 'openTracking' => true, 'clickTracking' => false]);
+        $domain = $this->client($t)->domains->update('dom/1', ['open_tracking' => true]);
+        self::assertTrue($domain['openTracking']);
+        self::assertSame('PATCH', $t->calls[0]['method']);
+        self::assertSame('https://api.vaartix.com/domains/dom%2F1', $t->calls[0]['url']);
+        self::assertSame(['openTracking' => true], $t->calls[0]['json']);
+    }
+
     public function testApiKeyFromEnvironment(): void
     {
         putenv('VAARTIX_API_KEY=vx_env');
