@@ -15,6 +15,14 @@ namespace Vaartix;
  *   `too_fast` or `burst` for clicks.
  * - `userAgentFamily` (string), `country` (string|null) and `asn` (int|null).
  * - Clicks only: `link` (the original URL) and `linkIndex` (its position in the HTML, from 0).
+ *
+ * `email.delivery_delayed` details: `delayType`, `expirationTime` (when retries stop),
+ * `diagnosticCode` (the receiving server's exact reply, e.g. Yahoo's `421 4.7.0 [TSS04] …` line)
+ * and `statusCode` (e.g. `4.7.0`). A soft bounce can also arrive as `email.delivery_delayed`;
+ * it has `bounceType` instead of `delayType`.
+ *
+ * `email.bounced` details: `bounceType` (`Permanent`), `bounceSubType`, `diagnosticCode`,
+ * `statusCode` and the deprecated `diagnostics` list.
  */
 final class WebhookEvent
 {

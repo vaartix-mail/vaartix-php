@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `WebhookEvent` docs cover the `details` of `email.delivery_delayed` and `email.bounced`,
+  including `diagnosticCode`: the receiving server's exact reply, such as Yahoo's TSS04 line.
+
 ## 0.4.0
 
 - `email.opened` and `email.clicked` webhook events. New `Vaartix\WebhookEvent` class with a
