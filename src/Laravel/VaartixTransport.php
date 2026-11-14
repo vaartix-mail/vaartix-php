@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vaartix\Laravel;
 
+use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Envelope;
@@ -18,6 +19,7 @@ use Symfony\Component\Mime\Header\HeaderInterface;
 use Symfony\Component\Mime\Message;
 use Symfony\Component\Mime\MessageConverter;
 use Vaartix\Exceptions\VaartixException;
+use Vaartix\Tracking;
 use Vaartix\Vaartix;
 
 /**
@@ -121,9 +123,18 @@ final class VaartixTransport extends AbstractTransport
 
         $headers = [];
         $tags = [];
+        $tracking = [];
         foreach ($email->getHeaders()->all() as $header) {
             /** @var HeaderInterface $header */
-            if ($header instanceof TagHeader) {
+            if (strtolower($header->getName()) === strtolower(Tracking::HEADER)) {
+                // Same format as the SMTP relay: "opens=on, clicks=off". Sent as the API's tracking
+                // object, never as a header.
+                try {
+                    $tracking = Tracking::parseHeader($header->getBodyAsString(), $tracking);
+                } catch (InvalidArgumentException $e) {
+                    throw new TransportException($e->getMessage(), 0, $e);
+                }
+            } elseif ($header instanceof TagHeader) {
                 // Laravel's ->tag('welcome') becomes the Vaartix tag welcome=true.
                 $tags[] = ['name' => $header->getValue(), 'value' => 'true'];
             } elseif ($header instanceof MetadataHeader) {
@@ -138,6 +149,9 @@ final class VaartixTransport extends AbstractTransport
         }
         if ($tags !== []) {
             $params['tags'] = $tags;
+        }
+        if ($tracking !== []) {
+            $params['tracking'] = $tracking;
         }
         return $params;
     }

@@ -13,6 +13,8 @@ final class Params
         'scheduled_at' => 'scheduledAt',
         'content_type' => 'contentType',
         'content_id' => 'contentId',
+        'open_tracking' => 'openTracking',
+        'click_tracking' => 'clickTracking',
     ];
 
     /**

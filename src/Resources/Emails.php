@@ -16,7 +16,9 @@ final class Emails
     /**
      * Send an email. Returns `['id' => 'em_...']` once it is queued.
      *
-     * Keys can be snake_case (`reply_to`, `scheduled_at`) or the API's camelCase. With an
+     * Keys can be snake_case (`reply_to`, `scheduled_at`) or the API's camelCase. Pass
+     * `'tracking' => ['opens' => true, 'clicks' => false]` to override the domain's open and click
+     * tracking for this email. With an
      * idempotency key, retrying within 24 hours returns the first email instead of sending again.
      *
      * @param array<string, mixed> $params
