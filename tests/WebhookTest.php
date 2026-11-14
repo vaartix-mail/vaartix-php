@@ -7,6 +7,7 @@ namespace Vaartix\Tests;
 use PHPUnit\Framework\TestCase;
 use Vaartix\Exceptions\WebhookVerificationException;
 use Vaartix\Webhook;
+use Vaartix\WebhookEvent;
 
 final class WebhookTest extends TestCase
 {
@@ -96,5 +97,48 @@ final class WebhookTest extends TestCase
             1793181600,
         );
         self::assertSame('priya@example.com', $event['data']['recipient']);
+    }
+    public function testEmailClickedPayload(): void
+    {
+        $secret = self::PREFIX . base64_encode(str_repeat('x', 24));
+        $body = (string) json_encode([
+            'type' => 'email.clicked',
+            'createdAt' => '2026-10-28T10:05:41.000Z',
+            'data' => [
+                'emailId' => 'em_7hq2kv9xr4m1c8d3',
+                'recipient' => 'rahul@example.in',
+                'details' => [
+                    'machine' => false,
+                    'machineReason' => null,
+                    'linkIndex' => 0,
+                    'link' => 'https://acme.in/orders/123',
+                    'userAgentFamily' => 'Chrome',
+                    'country' => 'IN',
+                    'asn' => 24560,
+                ],
+            ],
+        ]);
+        $key = (string) base64_decode(substr($secret, strlen(self::PREFIX)));
+        $signature = 'v1,' . base64_encode(hash_hmac('sha256', "whd_2.1793181600.{$body}", $key, true));
+        $event = Webhook::verify(
+            $body,
+            ['webhook-id' => 'whd_2', 'webhook-timestamp' => '1793181600', 'webhook-signature' => $signature],
+            $secret,
+            300,
+            1793181600,
+        );
+        self::assertSame(WebhookEvent::CLICKED, $event['type']);
+        self::assertIsArray($event['data']);
+        self::assertIsArray($event['data']['details']);
+        self::assertFalse($event['data']['details']['machine']);
+        self::assertSame('https://acme.in/orders/123', $event['data']['details']['link']);
+    }
+
+    public function testEventTypeList(): void
+    {
+        self::assertCount(10, WebhookEvent::ALL);
+        self::assertSame(WebhookEvent::ALL, array_values(array_unique(WebhookEvent::ALL)));
+        self::assertContains('email.opened', WebhookEvent::ALL);
+        self::assertContains('email.clicked', WebhookEvent::ALL);
     }
 }

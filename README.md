@@ -186,6 +186,7 @@ Check that a webhook request really came from Vaartix before trusting it. Pass t
 
 ```php
 use Vaartix\Webhook;
+use Vaartix\WebhookEvent;
 use Vaartix\Exceptions\WebhookVerificationException;
 
 // Plain PHP
@@ -203,12 +204,21 @@ Route::post('/webhooks/vaartix', function (Request $request) {
     } catch (WebhookVerificationException $e) {
         abort(400);
     }
-    if ($event['type'] === 'email.bounced') {
+    if ($event['type'] === WebhookEvent::BOUNCED) {
         // stop emailing $event['data']['recipient']
+    }
+    if ($event['type'] === WebhookEvent::CLICKED && ! $event['data']['details']['machine']) {
+        // a person clicked $event['data']['details']['link']
     }
     return response()->noContent();
 });
 ```
+
+`Vaartix\WebhookEvent` has a constant for every event type, and `WebhookEvent::ALL` lists them.
+Endpoints receive `email.opened` and `email.clicked` only if they subscribe to them. Their
+`details` include `machine`, which is `true` when the open or click was most likely not a person
+(an image proxy, Apple Mail Privacy Protection or a link scanner), with the reason in
+`machineReason`. Clicks also have `link` and `linkIndex`.
 
 Signatures follow the [Standard Webhooks](https://www.standardwebhooks.com) spec. Manage endpoints
 with `$vaartix->webhooks->create()`, `list()`, `get()`, `update()`, `remove()`, `rotateSecret()`,
