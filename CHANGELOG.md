@@ -4,6 +4,8 @@
 
 ## 0.4.0
 
+- `email.opened` and `email.clicked` webhook events. New `Vaartix\WebhookEvent` class with a
+  constant for every event type and `WebhookEvent::ALL`.
 - Open and click tracking: `'tracking' => ['opens' => ..., 'clicks' => ...]` on `emails->send()`
   and on each email in `batch->send()`, overriding the sending domain's defaults.
 - Laravel and Symfony: an `X-Vaartix-Tracking: opens=on, clicks=off` header on a message becomes
