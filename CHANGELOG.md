@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.1
+
 - `WebhookEvent` docs cover the `details` of `email.delivery_delayed` and `email.bounced`,
   including `diagnosticCode`: the receiving server's exact reply, such as Yahoo's TSS04 line.
 
