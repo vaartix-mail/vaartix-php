@@ -26,7 +26,7 @@ use Vaartix\Resources\Webhooks;
  */
 final class Vaartix
 {
-    public const VERSION = '0.4.1';
+    public const VERSION = '0.4.2';
     public const DEFAULT_BASE_URL = 'https://api.vaartix.com';
 
     public readonly Emails $emails;
