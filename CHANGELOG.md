@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Safer request headers.** The idempotency key passed to `emails->send()` must now be 1 to 256 printable ASCII characters; anything else throws a `validation_error` before a request is made. The cURL transport also refuses any header containing a line break or NUL byte, so an untrusted value can never add extra headers to a request.
+
 ## 0.4.1
 
 - `WebhookEvent` docs cover the `details` of `email.delivery_delayed` and `email.bounced`,

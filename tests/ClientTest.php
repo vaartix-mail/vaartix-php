@@ -33,6 +33,26 @@ final class ClientTest extends TestCase
         self::assertSame('Hi', $call['json']['subject']);
     }
 
+    public function testRejectsIdempotencyKeysThatCouldAddHeaders(): void
+    {
+        foreach (["abc\r\nX-HTTP-Method-Override: DELETE", "abc\n", "abc\0", 'ключ', str_repeat('a', 257)] as $bad) {
+            $t = new FakeTransport();
+            try {
+                $this->client($t)->emails->send(['from' => 'a@acme.in', 'to' => 'b@example.com', 'subject' => 'Hi', 'text' => 'Hi'], $bad);
+                self::fail('Expected the key to be rejected: ' . json_encode($bad));
+            } catch (VaartixException $e) {
+                self::assertSame('validation_error', $e->type);
+                self::assertSame([], $t->calls, 'Nothing is sent when the key is rejected');
+            }
+        }
+    }
+
+    public function testCurlTransportRefusesHeaderLineBreaks(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        Vaartix::curlTransport('POST', 'http://127.0.0.1:1/emails', ['X-Test' => "a\r\nX-Injected: 1"], null, 1.0);
+    }
+
     public function testSnakeCaseKeysBecomeApiNames(): void
     {
         $t = new FakeTransport();
