@@ -98,6 +98,10 @@ final class Vaartix
             }
         }
         if ($idempotencyKey !== null && $idempotencyKey !== '') {
+            // Printable ASCII only: a line break here would start a new HTTP header.
+            if (preg_match('/\A[\x20-\x7E]{1,256}\z/', $idempotencyKey) !== 1) {
+                throw new VaartixException('validation_error', 'The idempotency key must be 1 to 256 printable ASCII characters.');
+            }
             $headers['Idempotency-Key'] = $idempotencyKey;
         }
 
@@ -130,6 +134,10 @@ final class Vaartix
         }
         $lines = [];
         foreach ($headers as $name => $value) {
+            // Never let a CR, LF or NUL in a header split it into extra headers.
+            if (strpbrk((string) $name, "\r\n\0:") !== false || strpbrk((string) $value, "\r\n\0") !== false) {
+                throw new InvalidArgumentException("Header {$name} contains a line break or NUL byte.");
+            }
             $lines[] = "{$name}: {$value}";
         }
         $ch = curl_init($url);
